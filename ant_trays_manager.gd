@@ -12,8 +12,10 @@ extends Sprite2D
 const TRAIL_SHADER := preload("res://shader/trail_accumulate.gdshader")
 const STAMP_SHADER := preload("res://shader/trail_stamp.gdshader")
 const MAX_MOUSE_STAMPS_PER_FRAME := 256
+const SIGNAL_FIELD_SIZE := Vector2i(256, 192)
 
 var mouse_draw_points: Array[Vector2] = []
+var _trail_signal := PackedFloat32Array()
 var is_mouse_drawing := false
 var last_mouse_position := Vector2.ZERO
 var _viewports: Array[SubViewport] = []
@@ -26,6 +28,7 @@ var _current_viewport := 0
 var _clear_requested := false
 
 func _ready() -> void:
+    add_to_group("ant_trail_manager")
     if trace_drawing_texture == null:
         push_error("AntTraysManager needs a trace_drawing_texture.")
         return
@@ -35,6 +38,9 @@ func _ready() -> void:
     if texture_size.x <= 0 or texture_size.y <= 0:
         push_error("AntTraysManager texture_size must be positive.")
         return
+
+    _trail_signal.resize(SIGNAL_FIELD_SIZE.x * SIGNAL_FIELD_SIZE.y)
+    _trail_signal.fill(0.0)
 
     for i in range(2):
         var viewport := SubViewport.new()
@@ -141,12 +147,58 @@ func _process(delta: float) -> void:
         mouse_positions.append(mouse_draw_points[i])
     _update_stamp_sprites(_mouse_sprites[destination], mouse_positions, stamp_scale, not _clear_requested)
 
+    _update_trail_signal(delta, ant_positions, mouse_positions)
+
     _viewports[destination].render_target_update_mode = SubViewport.UPDATE_ONCE
     texture = _viewports[destination].get_texture()
     _current_viewport = destination
     _clear_requested = false
     for i in range(mouse_count):
         mouse_draw_points.pop_front()
+
+func get_trail_signal() -> PackedFloat32Array:
+    return _trail_signal
+
+func get_trail_signal_size() -> Vector2i:
+    return SIGNAL_FIELD_SIZE
+
+func get_trail_world_bounds() -> Rect2:
+    return world_bounds
+
+func _update_trail_signal(delta: float, ant_positions: Array[Vector2], mouse_positions: Array[Vector2]) -> void:
+    if _clear_requested:
+        _trail_signal.fill(0.0)
+        return
+
+    var fade_factor := pow(0.5, delta / maxf(fade_half_life_seconds, 0.1))
+    for i in range(_trail_signal.size()):
+        _trail_signal[i] *= fade_factor
+
+    for point in ant_positions:
+        _stamp_signal_point(point)
+    for point in mouse_positions:
+        _stamp_signal_point(point)
+
+func _stamp_signal_point(texture_position: Vector2) -> void:
+    var field_position := texture_position * Vector2(SIGNAL_FIELD_SIZE) / Vector2(texture_size)
+    var field_radius := Vector2(
+        maxf(brush_size.x * float(SIGNAL_FIELD_SIZE.x) / world_bounds.size.x * 0.5, 1.0),
+        maxf(brush_size.y * float(SIGNAL_FIELD_SIZE.y) / world_bounds.size.y * 0.5, 1.0)
+    )
+    var min_x := maxi(floori(field_position.x - field_radius.x), 0)
+    var max_x := mini(ceili(field_position.x + field_radius.x), SIGNAL_FIELD_SIZE.x - 1)
+    var min_y := maxi(floori(field_position.y - field_radius.y), 0)
+    var max_y := mini(ceili(field_position.y + field_radius.y), SIGNAL_FIELD_SIZE.y - 1)
+
+    for y in range(min_y, max_y + 1):
+        for x in range(min_x, max_x + 1):
+            var offset := Vector2(x, y) - field_position
+            var normalized_distance := (offset.x * offset.x) / (field_radius.x * field_radius.x) + (offset.y * offset.y) / (field_radius.y * field_radius.y)
+            if normalized_distance > 1.0:
+                continue
+            var strength := 1.0 - smoothstep(0.35, 1.0, normalized_distance)
+            var index := y * SIGNAL_FIELD_SIZE.x + x
+            _trail_signal[index] = maxf(_trail_signal[index], strength)
 
 func _ensure_stamp_pool(pool: Array, viewport: SubViewport, required_count: int) -> void:
     while pool.size() < required_count:

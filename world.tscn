@@ -4,7 +4,7 @@
 [ext_resource type="PackedScene" uid="uid://drda1jsxxf7gu" path="res://ant.tscn" id="1_f3sb7"]
 [ext_resource type="Shader" uid="uid://1itim4qv258y" path="res://shader/pixel_postprocess.gdshader" id="3_036b0"]
 [ext_resource type="Script" uid="uid://dmjtk6jtntsi8" path="res://world_boundary.gd" id="5_036b0"]
-[ext_resource type="Script" path="res://ant_simulation.gd" id="6_ant_sim"]
+[ext_resource type="Script" uid="uid://d3ht62j8xcx6j" path="res://ant_simulation.gd" id="6_ant_sim"]
 
 [sub_resource type="Gradient" id="Gradient_oav7h"]
 interpolation_mode = 2
@@ -42,7 +42,7 @@ script = ExtResource("1_aqk2v")
 trace_drawing_texture = SubResource("GradientTexture2D_aqk2v")
 ants_parent = NodePath("../AntsParent")
 
-[node name="AntSimulation" type="Node" parent="."]
+[node name="AntSimulation" type="Node" parent="." unique_id=1112912811]
 script = ExtResource("6_ant_sim")
 
 [node name="AntsParent" type="Node2D" parent="." unique_id=256771919]
@@ -84,7 +84,7 @@ scale = Vector2(0.59, 0.59)
 scale = Vector2(0.59, 0.59)
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=822655050]
-zoom = Vector2(0.605, 0.605)
+zoom = Vector2(0.215, 0.215)
 
 [node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=1822913670]
 layer = -4
