@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://haoh8ywnejut"
+path="res://.godot/imported/ant_movement.glsl-442d3fb980721725f25b35aab3484d8f.res"
+
+[deps]
+
+source_file="res://shader/ant_movement.glsl"
+dest_files=["res://.godot/imported/ant_movement.glsl-442d3fb980721725f25b35aab3484d8f.res"]
+
+[params]
+

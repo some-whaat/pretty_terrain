@@ -1,0 +1,150 @@
+[gd_scene format=3 uid="uid://drda1jsxxf7gu"]
+
+[ext_resource type="Script" uid="uid://0alk08a1k0pf" path="res://ant_smart_movement.gd" id="1_bsvr1"]
+[ext_resource type="Script" uid="uid://bkx8y7jsq3ofp" path="res://legs_manager.gd" id="2_2f0xw"]
+[ext_resource type="Script" uid="uid://ios215oaougq" path="res://antennae_manager.gd" id="2_5tacl"]
+[ext_resource type="Curve" uid="uid://32pry1l4fo4u" path="res://ant_leg_with.tres" id="3_q4ieg"]
+[ext_resource type="Gradient" uid="uid://dtcmyvtrar3s2" path="res://ant_leg_gradient.tres" id="4_lck3i"]
+[ext_resource type="Material" uid="uid://csc5fxjlvlky0" path="res://gradient.tres" id="5_v1j43"]
+[ext_resource type="Texture2D" uid="uid://ckon6r20fyhix" path="res://eye.png" id="6_bsvr1"]
+[ext_resource type="Texture2D" uid="uid://dflqq5y0wichn" path="res://star.png" id="6_v1j43"]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_s2j4u"]
+radius = 44.0
+height = 178.0
+
+[sub_resource type="Gradient" id="Gradient_oav7h"]
+interpolation_mode = 1
+offsets = PackedFloat32Array(0, 0.615)
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_x32av"]
+gradient = SubResource("Gradient_oav7h")
+fill = 1
+fill_from = Vector2(0.51428574, 0.51607144)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_5tacl"]
+gradient = SubResource("Gradient_oav7h")
+width = 103
+height = 97
+fill = 1
+fill_from = Vector2(0.51428574, 0.51607144)
+
+[node name="Ant" type="CharacterBody2D" unique_id=1317429480]
+script = ExtResource("1_bsvr1")
+max_speed = 333.0
+wander_strength = 0.9
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1621164885]
+position = Vector2(-93, 0)
+rotation = 1.5707964
+shape = SubResource("CapsuleShape2D_s2j4u")
+
+[node name="LegsManager" type="Node2D" parent="." unique_id=80948299 node_paths=PackedStringArray("left_leg_marker_1", "left_leg_marker_2", "left_leg_marker_3", "right_leg_marker_1", "right_leg_marker_2", "right_leg_marker_3", "leg_origin_marker_1", "leg_origin_marker_2", "leg_origin_marker_3")]
+position = Vector2(-61, 0)
+script = ExtResource("2_2f0xw")
+ant_leg_with = ExtResource("3_q4ieg")
+ant_leg_gradient = ExtResource("4_lck3i")
+gradient = ExtResource("5_v1j43")
+left_leg_marker_1 = NodePath("LeftLegMarker1")
+left_leg_marker_2 = NodePath("LeftLegMarker2")
+left_leg_marker_3 = NodePath("LeftLegMarker3")
+right_leg_marker_1 = NodePath("RightLegMarker1")
+right_leg_marker_2 = NodePath("RightLegMarker2")
+right_leg_marker_3 = NodePath("RightLegMarker3")
+leg_origin_marker_1 = NodePath("LegOriginMarker1")
+leg_origin_marker_2 = NodePath("LegOriginMarker2")
+leg_origin_marker_3 = NodePath("LegOriginMarker3")
+step_threshold = 33.0
+
+[node name="LeftLegMarker1" type="Marker2D" parent="LegsManager" unique_id=1462526167]
+position = Vector2(-102, -104)
+
+[node name="LeftLegMarker2" type="Marker2D" parent="LegsManager" unique_id=354321845]
+position = Vector2(-12, -113)
+
+[node name="LeftLegMarker3" type="Marker2D" parent="LegsManager" unique_id=1509613899]
+position = Vector2(61, -88)
+
+[node name="RightLegMarker1" type="Marker2D" parent="LegsManager" unique_id=822400574]
+position = Vector2(-102, 104)
+
+[node name="RightLegMarker2" type="Marker2D" parent="LegsManager" unique_id=341407010]
+position = Vector2(-12, 113)
+
+[node name="RightLegMarker3" type="Marker2D" parent="LegsManager" unique_id=898315743]
+position = Vector2(61, 88)
+
+[node name="LegOriginMarker1" type="Marker2D" parent="LegsManager" unique_id=1763652602]
+position = Vector2(-29, 0)
+
+[node name="LegOriginMarker2" type="Marker2D" parent="LegsManager" unique_id=2116617869]
+position = Vector2(-15, 0)
+
+[node name="LegOriginMarker3" type="Marker2D" parent="LegsManager" unique_id=836131668]
+position = Vector2(-8, 0)
+
+[node name="Eye" type="Sprite2D" parent="." unique_id=439915060]
+z_index = 3
+position = Vector2(-24.5, 22)
+texture = ExtResource("6_bsvr1")
+
+[node name="Eye2" type="Sprite2D" parent="." unique_id=1259187195]
+z_index = 3
+position = Vector2(-26.5, -18)
+texture = ExtResource("6_bsvr1")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=55604697]
+z_index = 2
+material = ExtResource("5_v1j43")
+position = Vector2(-30.5, 0)
+texture = SubResource("GradientTexture2D_x32av")
+
+[node name="Sprite2D2" type="Sprite2D" parent="." unique_id=881784034]
+z_index = 2
+material = ExtResource("5_v1j43")
+position = Vector2(-75.50001, 0)
+scale = Vector2(0.845, 0.845)
+texture = SubResource("GradientTexture2D_x32av")
+
+[node name="Sprite2D3" type="Sprite2D" parent="." unique_id=423383661]
+z_index = 2
+material = ExtResource("5_v1j43")
+position = Vector2(-140.5, 0)
+texture = SubResource("GradientTexture2D_5tacl")
+
+[node name="AntennaeManager" type="Node2D" parent="." unique_id=1703740531 node_paths=PackedStringArray("antenna_left_line", "antenna_right_line", "antenna_right_sprite", "antenna_left_sprite", "antenna_right_marker", "antenna_left_marker")]
+position = Vector2(-22, 0)
+script = ExtResource("2_5tacl")
+antenna_left_line = NodePath("AntennaLeftLine")
+antenna_right_line = NodePath("AntennaRightLine")
+antenna_right_sprite = NodePath("AntennaRightSprite")
+antenna_left_sprite = NodePath("AntennaLeftSprite")
+antenna_right_marker = NodePath("AntennaRightMarker")
+antenna_left_marker = NodePath("AntennaLeftMarker")
+
+[node name="AntennaRightLine" type="Line2D" parent="AntennaeManager" unique_id=1634680848]
+top_level = true
+material = ExtResource("5_v1j43")
+points = PackedVector2Array(52, 9, 99, 40)
+
+[node name="AntennaLeftLine" type="Line2D" parent="AntennaeManager" unique_id=310739765]
+top_level = true
+material = ExtResource("5_v1j43")
+points = PackedVector2Array(46, -12, 107, -37)
+
+[node name="AntennaRightSprite" type="Sprite2D" parent="AntennaeManager" unique_id=1904387775]
+top_level = true
+material = ExtResource("5_v1j43")
+texture = ExtResource("6_v1j43")
+
+[node name="AntennaLeftSprite" type="Sprite2D" parent="AntennaeManager" unique_id=1412612308]
+top_level = true
+material = ExtResource("5_v1j43")
+texture = ExtResource("6_v1j43")
+
+[node name="AntennaRightMarker" type="Marker2D" parent="AntennaeManager" unique_id=819463181]
+position = Vector2(77, 39)
+
+[node name="AntennaLeftMarker" type="Marker2D" parent="AntennaeManager" unique_id=1478858238]
+position = Vector2(77, -39)
