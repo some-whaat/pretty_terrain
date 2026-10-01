@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://c3vbmy6g4lm7h"
+path="res://.godot/imported/trail_update.glsl-d635d5daa79853ffc66e5314c177e3ee.res"
+
+[deps]
+
+source_file="res://shader/trail_update.glsl"
+dest_files=["res://.godot/imported/trail_update.glsl-d635d5daa79853ffc66e5314c177e3ee.res"]
+
+[params]
+

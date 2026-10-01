@@ -18,11 +18,9 @@ height = 33
 fill = 1
 fill_from = Vector2(0.51428574, 0.51607144)
 
-[sub_resource type="DrawableTexture2D" id="DrawableTexture2D_s2j4u"]
-
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_s2j4u"]
 shader = ExtResource("3_036b0")
-shader_parameter/pixilation_amount = 0.1
+shader_parameter/pixilation_amount = 0.3
 
 [sub_resource type="WorldBoundaryShape2D" id="WorldBoundaryShape2D_s2j4u"]
 
@@ -37,10 +35,9 @@ normal = Vector2(1, 0)
 
 [node name="world" type="Node2D" unique_id=1328817645]
 
-[node name="AntTraysManager" type="Sprite2D" parent="." unique_id=735305506 node_paths=PackedStringArray("ants_parent")]
+[node name="AntTraysManager" type="Sprite2D" parent="." unique_id=735305506]
 script = ExtResource("1_aqk2v")
 trace_drawing_texture = SubResource("GradientTexture2D_aqk2v")
-ants_parent = NodePath("../AntsParent")
 
 [node name="AntSimulation" type="Node" parent="." unique_id=1112912811]
 script = ExtResource("6_ant_sim")
@@ -84,7 +81,7 @@ scale = Vector2(0.59, 0.59)
 scale = Vector2(0.59, 0.59)
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=822655050]
-zoom = Vector2(0.215, 0.215)
+zoom = Vector2(0.33, 0.33)
 
 [node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=1822913670]
 layer = -4
@@ -97,17 +94,7 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.27058825, 0.24705882, 0.4, 1)
 
-[node name="TextureRect" type="TextureRect" parent="CanvasLayer" unique_id=992452271]
-visible = false
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-texture = SubResource("DrawableTexture2D_s2j4u")
-
 [node name="PostProcessCanvasLayer" type="CanvasLayer" parent="." unique_id=1372234057]
-visible = false
 
 [node name="ColorRect" type="ColorRect" parent="PostProcessCanvasLayer" unique_id=1385722412]
 material = SubResource("ShaderMaterial_s2j4u")
