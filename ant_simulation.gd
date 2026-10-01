@@ -3,11 +3,11 @@ extends Node
 @export var world_bounds := Rect2(-2800.0, -1800.0, 5600.0, 3600.0)
 @export_range(1.0, 1000.0, 1.0) var separation_radius := 150.0
 @export_group("Trail Sensing")
-@export_range(1.0, 600.0, 1.0) var sensor_distance := 220.0
-@export_range(1.0, 160.0, 1.0) var sensor_angle_degrees := 72.0
+@export_range(1.0, 600.0, 1.0) var sensor_distance := 333.0
+@export_range(1.0, 160.0, 1.0) var sensor_angle_degrees := 88.0
 @export_range(32, 4096, 32) var sensor_sample_budget := 512
 @export_range(0.0, 1.0, 0.01) var trail_threshold := 0.04
-@export_range(0.0, 1.0, 0.01) var trail_follow_strength := 0.78
+@export_range(0.0, 1.0, 0.01) var trail_follow_strength := 1. # 0.78
 
 const COMPUTE_SHADER_PATH := "res://shader/ant_movement.glsl"
 const AGENT_BYTES := 48

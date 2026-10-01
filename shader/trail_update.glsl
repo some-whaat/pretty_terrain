@@ -51,7 +51,12 @@ void main() {
     }
 
     vec4 old_value = texelFetch(previous_trail, pixel, 0);
-    float intensity = params.clear_flag != 0u ? 0.0 : old_value.a * params.fade_factor;
+    float intensity = params.clear_flag != 0u ? 0.0 : old_value.a;// * params.fade_factor;
+    intensity *= exp(-0.3 * params.delta); // pow(0.0001, params.delta / 10.0);
+    if (intensity < 0.1) {
+        intensity = 0.0;
+    }
+    
     vec2 world_position = params.bounds_min + (vec2(pixel) + vec2(0.5)) / vec2(extent) * params.bounds_size;
     // Additional trail effects (diffusion, chemistry, etc.) belong between decay and stamping here.
     for (uint i = 0u; i < params.mouse_stamp_count; i++) {

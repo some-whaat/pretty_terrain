@@ -17,7 +17,7 @@ const UPDATE_SHADER_PATH := "res://shader/trail_update.glsl"
 const DISPLAY_SHADER_PATH := "res://shader/trail_display.gdshader"
 const MAX_STAMPS := 512
 const WORKGROUP_SIZE := 8
-const TRAIL_FORMAT := RenderingDevice.DATA_FORMAT_R8G8B8A8_UNORM
+const TRAIL_FORMAT := RenderingDevice.DATA_FORMAT_R8G8B8A8_UNORM # RenderingDevice.DATA_FORMAT_R32G32B32A32_UINT # othervise it does not fade properly
 const TRAIL_USAGE := RenderingDevice.TEXTURE_USAGE_SAMPLING_BIT | RenderingDevice.TEXTURE_USAGE_STORAGE_BIT
 
 var _display_texture: Texture2DRD
@@ -289,7 +289,7 @@ func update_gpu(delta: float, agent_buffer_index: int, agent_count: int, frame_i
     if not mouse_bytes.is_empty():
         _rd.buffer_update(_stamp_buffer, 0, mouse_bytes.size(), mouse_bytes)
     var safe_delta := clampf(delta, 0.0, 0.1)
-    var fade := exp(-log(2.0) * safe_delta / maxf(fade_half_life_seconds, 0.01))
+    var fade := 0.99999 # exp(-log(2.0) * safe_delta / maxf(fade_half_life_seconds, 0.01))
     var params := PackedByteArray()
     params.resize(96)
     params.encode_float(0, safe_delta)
