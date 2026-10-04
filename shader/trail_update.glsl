@@ -56,7 +56,7 @@ void main() {
     if (intensity < 0.1) {
         intensity = 0.0;
     }
-    
+
     vec2 world_position = params.bounds_min + (vec2(pixel) + vec2(0.5)) / vec2(extent) * params.bounds_size;
     // Additional trail effects (diffusion, chemistry, etc.) belong between decay and stamping here.
     for (uint i = 0u; i < params.mouse_stamp_count; i++) {
@@ -66,7 +66,9 @@ void main() {
         intensity = 1.0 - (1.0 - intensity) * (1.0 - amount);
     }
     for (uint ant = 0u; ant < params.ant_count; ant++) {
-        vec2 ant_position = ant_state.state[ant * 3u].xy;
+        vec4 ant_pose = ant_state.state[ant * 3u];
+        vec2 ant_forward = vec2(cos(ant_pose.z), sin(ant_pose.z));
+        vec2 ant_position = ant_pose.xy - ant_forward * (0.4 * params.ant_brush_width);
         float mask = stamp_mask(world_position, ant_position, vec2(params.ant_brush_width, params.ant_brush_height));
         float amount = clamp(mask * params.ant_strength, 0.0, 1.0);
         intensity = 1.0 - (1.0 - intensity) * (1.0 - amount);

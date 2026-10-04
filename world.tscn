@@ -43,6 +43,7 @@ brush_size_world = 55.0
 
 [node name="AntSimulation" type="Node" parent="." unique_id=1112912811]
 script = ExtResource("6_ant_sim")
+sensor_angle_degrees = 120.0
 
 [node name="AntsParent" type="Node2D" parent="." unique_id=256771919]
 
@@ -97,6 +98,7 @@ grow_vertical = 2
 color = Color(0.27058825, 0.24705882, 0.4, 1)
 
 [node name="PostProcessCanvasLayer" type="CanvasLayer" parent="." unique_id=1372234057]
+visible = false
 
 [node name="ColorRect" type="ColorRect" parent="PostProcessCanvasLayer" unique_id=1385722412]
 material = SubResource("ShaderMaterial_s2j4u")

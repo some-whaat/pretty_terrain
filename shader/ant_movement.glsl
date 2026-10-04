@@ -135,13 +135,32 @@ void main() {
     float random_phase = hash(seed + floor(params.simulation_time * 60.0)) * 2.0 - 1.0;
     float wander_angle = random_phase * wander_strength;
     vec2 forward = vec2(cos(heading), sin(heading));
-    vec2 desired = vec2(cos(heading + wander_angle), sin(heading + wander_angle));
+    vec2 desired = vec2(0.); //vec2(cos(heading + wander_angle), sin(heading + wander_angle));
+    // vec2 desired = vec2(cos(heading + wander_angle), sin(heading + wander_angle));
 
     float trail_signal = 0.0;
     vec2 trail_direction = go_along_trail(position, forward, trail_signal);
-    if (trail_signal > 0.0 && dot(trail_direction, trail_direction) > 1e-8) {
-        float follow = clamp(params.trail_follow_strength * trail_signal, 0.0, 0.85);
-        desired = normalize(mix(desired, trail_direction, follow));
+    if (trail_signal > 0.3 && dot(trail_direction, trail_direction) > 1e-8) {
+
+        // float follow = clamp(params.trail_follow_strength * trail_signal, 0.0, 0.85);
+        // desired = normalize(mix(desired, trail_direction, follow));
+        desired = trail_direction;
+    }
+    else {
+        velocity = vec2(0.0);
+
+            // Pick a turn direction. random_phase is in [-1, 1].
+            //float turn_dir = (random_phase >= 0.0) ? 1.0 : -1.0;
+
+            heading = wrap_angle(heading + rotation_speed * params.delta / 2.0);
+
+            output_state.state[base] = vec4(position, heading, 0.0);
+            output_state.state[base + 1u] = vec4(velocity, max_speed, steer_force);
+            output_state.state[base + 2u] = tuning;
+            visual_state.values[id * 2u] = vec4(position, heading, 0.0);
+            visual_state.values[id * 2u + 1u] = vec4(velocity, 0.0, 0.0);
+
+            return;
     }
 
     vec2 separation = vec2(0.0);
