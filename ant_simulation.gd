@@ -10,7 +10,7 @@ extends Node
 @export_range(0.0, 1.0, 0.01) var trail_follow_strength := 1. # 0.78
 
 const COMPUTE_SHADER_PATH := "res://shader/ant_movement.glsl"
-const AGENT_BYTES := 48
+const AGENT_BYTES := 64
 const VISUAL_AGENT_BYTES := 32
 const WORKGROUP_SIZE := 64
 
@@ -103,6 +103,10 @@ func _build_initial_state() -> PackedByteArray:
         data.encode_float(offset + 36, ant.wander_strength)
         data.encode_float(offset + 40, float(i + 1) * 17.173)
         data.encode_float(offset + 44, separation_radius)
+        data.encode_float(offset + 48, float(int(ant.get("type"))))
+        data.encode_float(offset + 52, float(int(ant.get("state"))))
+        data.encode_float(offset + 56, 0.0)
+        data.encode_float(offset + 60, 0.0)
     return data
 
 func _initialize_gpu(spirv: RDShaderSPIRV) -> void:

@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://drda1jsxxf7gu"]
 
-[ext_resource type="Script" uid="uid://0alk08a1k0pf" path="res://ant_smart_movement.gd" id="1_bsvr1"]
+[ext_resource type="Script" uid="uid://0alk08a1k0pf" path="res://ant_smart.gd" id="1_bsvr1"]
 [ext_resource type="Script" uid="uid://bkx8y7jsq3ofp" path="res://legs_manager.gd" id="2_2f0xw"]
 [ext_resource type="Script" uid="uid://ios215oaougq" path="res://antennae_manager.gd" id="2_5tacl"]
 [ext_resource type="Curve" uid="uid://32pry1l4fo4u" path="res://ant_leg_with.tres" id="3_q4ieg"]

@@ -1,9 +1,16 @@
 extends CharacterBody2D
 
+enum AntType { STUPID }
+enum AntState { NORMAL }
+
+@export var type : AntType = AntType.STUPID
+@export var state : AntState = AntState.NORMAL
+
 @export var max_speed: float = 180.0
 @export var steer_force: float = 4.0
 @export var rotation_speed: float = 6.0
 @export var wander_strength: float = 0.4
+
 
 func _ready() -> void:
     call_deferred("_register_with_simulation")

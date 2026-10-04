@@ -118,10 +118,13 @@ void main() {
         return;
     }
 
-    uint base = id * 3u;
+    uint base = id * 4u;
     vec4 position_heading = input_state.state[base];
     vec4 velocity_speed_steer = input_state.state[base + 1u];
     vec4 tuning = input_state.state[base + 2u];
+    vec4 ant_metadata = input_state.state[base + 3u];
+    uint ant_type = uint(ant_metadata.x);
+    uint ant_state = uint(ant_metadata.y);
     vec2 position = position_heading.xy;
     float heading = position_heading.z;
     vec2 velocity = velocity_speed_steer.xy;
@@ -157,6 +160,7 @@ void main() {
             output_state.state[base] = vec4(position, heading, 0.0);
             output_state.state[base + 1u] = vec4(velocity, max_speed, steer_force);
             output_state.state[base + 2u] = tuning;
+            output_state.state[base + 3u] = ant_metadata;
             visual_state.values[id * 2u] = vec4(position, heading, 0.0);
             visual_state.values[id * 2u + 1u] = vec4(velocity, 0.0, 0.0);
 
@@ -169,7 +173,7 @@ void main() {
         if (other == id) {
             continue;
         }
-        vec2 away = position - input_state.state[other * 3u].xy;
+        vec2 away = position - input_state.state[other * 4u].xy;
         float distance_squared = dot(away, away);
         if (distance_squared < radius_squared) {
             if (distance_squared < 1e-4) {
@@ -215,6 +219,7 @@ void main() {
     output_state.state[base] = vec4(position, heading, 0.0);
     output_state.state[base + 1u] = vec4(velocity, max_speed, steer_force);
     output_state.state[base + 2u] = tuning;
+    output_state.state[base + 3u] = ant_metadata;
     visual_state.values[id * 2u] = vec4(position, heading, 0.0);
     visual_state.values[id * 2u + 1u] = vec4(velocity, 0.0, 0.0);
 }

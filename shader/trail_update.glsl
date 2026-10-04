@@ -12,7 +12,7 @@ layout(set = 0, binding = 3, std430) readonly buffer MouseStamps {
 } mouse_stamps;
 
 layout(set = 0, binding = 4, std430) readonly buffer AntState {
-    vec4 state[]; // three vec4 values per ant; first vec4.xy is world position
+    vec4 state[]; // four vec4 values per ant; first vec4.xy is world position
 } ant_state;
 
 layout(set = 0, binding = 5, std140) uniform TrailParameters {
@@ -66,7 +66,7 @@ void main() {
         intensity = 1.0 - (1.0 - intensity) * (1.0 - amount);
     }
     for (uint ant = 0u; ant < params.ant_count; ant++) {
-        vec4 ant_pose = ant_state.state[ant * 3u];
+        vec4 ant_pose = ant_state.state[ant * 4u];
         vec2 ant_forward = vec2(cos(ant_pose.z), sin(ant_pose.z));
         vec2 ant_position = ant_pose.xy - ant_forward * (0.4 * params.ant_brush_width);
         float mask = stamp_mask(world_position, ant_position, vec2(params.ant_brush_width, params.ant_brush_height));
