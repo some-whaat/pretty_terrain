@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://drda1jsxxf7gu"]
 
-[ext_resource type="Script" uid="uid://0alk08a1k0pf" path="res://ant_smart.gd" id="1_bsvr1"]
+[ext_resource type="Script" uid="uid://bjwcxxojrixmi" path="res://ant.gd" id="1_bsvr1"]
 [ext_resource type="Script" uid="uid://bkx8y7jsq3ofp" path="res://legs_manager.gd" id="2_2f0xw"]
 [ext_resource type="Script" uid="uid://ios215oaougq" path="res://antennae_manager.gd" id="2_5tacl"]
 [ext_resource type="Curve" uid="uid://32pry1l4fo4u" path="res://ant_leg_with.tres" id="3_q4ieg"]
@@ -31,9 +31,8 @@ fill = 1
 fill_from = Vector2(0.51428574, 0.51607144)
 
 [node name="Ant" type="CharacterBody2D" unique_id=1317429480]
+scale = Vector2(0.59, 0.59)
 script = ExtResource("1_bsvr1")
-max_speed = 333.0
-wander_strength = 0.9
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1621164885]
 position = Vector2(-93, 0)
