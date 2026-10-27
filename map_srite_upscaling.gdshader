@@ -10,19 +10,23 @@ uniform vec3 grass_color : source_color = vec3(0.4, 0.7, 0.3);
 uniform vec2 grass_blade_size = vec2(0.1, 0.15);
 
 uniform bool draw_coast = true;
-uniform vec2 coast_offset;
+uniform vec2 coast_offset = vec2(0.003);
 uniform vec3 coast_color : source_color;
 
-uniform vec2 shadow_offset = vec2(-0.015, -0.02);
-uniform vec3 shadow_color : source_color = vec3(0.0);
+//uniform vec2 shadow_offset = vec2(-0.015, -0.02);
+//uniform vec3 shadow_color : source_color = vec3(0.0);
 
 uniform vec3 waveline_color : source_color;
 uniform float waveline_wave_scale = 33.0;
 uniform float waveline_wave_speed = 3.0;
 uniform float waveline_wave_amplitude = 2.0;
-uniform float waveline_wave_threshold = 0.5;
+//uniform float waveline_wave_threshold = 0.5;
 uniform float waveline_alpha_power = 2.0;
 uniform float waveline_cutoff = 0.00000001;
+
+uniform bool draw_grass_blades = true;
+uniform float grass_blades_hight = 0.007;
+uniform float grass_blades_ampletude = 70;
 
 vec2 get_aspect_correct_uv(vec2 uv) {
 	vec2 size = vec2(textureSize(world_curr_col, 0));
@@ -34,39 +38,43 @@ float island_alpha(vec2 uv) {
 	return texture(world_curr_col, uv).a;
 }
 
-float sdEquilateralTriangle( in vec2 p, in float size )
-{
-    const float k = sqrt(3.0);
-    p.x = abs(p.x) - size;
-    p.y = p.y + size/k;
-    if( p.x+k*p.y>0.0 ) p = vec2(p.x-k*p.y,-k*p.x-p.y)/2.0;
-    p.x -= clamp( p.x, -2.0*size, 0.0 );
-    return -length(p)*sign(p.y);
+float tringle(float x, float ampletude, float hight) {
+    return abs(2.0 * fract(x * ampletude) - 1.0) * hight;
 }
 
-float grass_sdf(vec2 pos) {
-	pos = mod(pos, grass_blade_size);
-	
-	return sdEquilateralTriangle(pos, 1.0);
-}
-
-vec3 terrain_color(vec4 curr_col, vec2 pos) {
+vec3 map_turrain_colors(vec3 in_col) {
 	vec3 col = grass_color;
-	vec3 curr_col_with_grass = curr_col.xyz;
-	
-	if (curr_col_with_grass.r > land_types_cutoff) {
+	if (in_col.r > land_types_cutoff) {
 		col = dirt_color;
 	}
-	if (curr_col_with_grass.g > land_types_cutoff) {
+	if (in_col.g > land_types_cutoff) {
 		col = grass_color;
 	}
 	return col;
 }
 
+vec3 terrain_color(vec3 curr_col, vec2 uv) {
+	//vec3 col = grass_color;
+	//vec3 curr_col_with_grass = curr_col.xyz;
+	
+	if (draw_grass_blades && curr_col.r > land_types_cutoff) { // grass blades
+		float grass_offset = tringle(uv.x + sin(TIME * 1.3) * 0.002, grass_blades_ampletude, grass_blades_hight);
+		
+		vec3 grass_blades = texture(world_curr_col, vec2(uv.x, uv.y + grass_offset)).xyz;
+		
+		curr_col = grass_blades;
+	}
+	return map_turrain_colors(curr_col);
+}
+
 vec4 waveline(float alpha) {
 	float wave = sin(alpha * waveline_wave_scale + sin(TIME * waveline_wave_speed) * waveline_wave_amplitude);
-	float wave_value = step(waveline_wave_threshold, wave);
-	float edge_alpha = clamp(pow(alpha / alfa_cutoff, waveline_alpha_power), 0.0, 1.0) * wave_value;
+	if (wave < 0.5) {
+		wave = 0.;
+	} else {
+		wave = 1.;
+	}
+	float edge_alpha = clamp(pow(alpha / alfa_cutoff, waveline_alpha_power), 0.0, 1.0) * wave;
 
 	return vec4(waveline_color * wave, edge_alpha);
 }
@@ -77,17 +85,25 @@ void fragment() {
 	vec4 res_col;
 
 	if (curr_col.a > alfa_cutoff) {
-		res_col = vec4(terrain_color(curr_col, uv), 1.0);
+		res_col = vec4(terrain_color(curr_col.xyz, uv), 1.0);
 
 		if (draw_coast && island_alpha(uv + coast_offset) < alfa_cutoff) {
 			res_col = vec4(coast_color, 1.0);
 		}
 	} else {
 		res_col.a = 0.0;
-
+		
+		vec4 wave_col = vec4(0.);
 		if (curr_col.a > waveline_cutoff) {
-			res_col = waveline(curr_col.a);
+			wave_col = waveline(curr_col.a); // wave line
 		}
+		
+		//if (island_alpha(uv + shadow_offset) > alfa_cutoff) { // shadow
+			//res_col = vec4(shadow_color, 1.);
+		//}
+		
+		res_col = wave_col;
+		
 	}
 
 	COLOR = res_col;
