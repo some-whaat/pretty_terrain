@@ -6,7 +6,10 @@ uniform float alfa_cutoff = 0.6;
 uniform float land_types_cutoff = 0.53;
 
 uniform vec3 dirt_color : source_color;
-uniform vec3 grass_color : source_color = vec3(0.4, 0.7, 0.3);
+uniform vec3 grass_color : source_color;
+uniform vec3 mountains_color : source_color;
+uniform vec3 mountain_pieck_color : source_color;
+uniform sampler2D mountains_noise : source_color;
 uniform vec2 grass_blade_size = vec2(0.1, 0.15);
 
 uniform bool draw_coast = true;
@@ -42,29 +45,52 @@ float tringle(float x, float ampletude, float hight) {
     return abs(2.0 * fract(x * ampletude) - 1.0) * hight;
 }
 
-vec3 map_turrain_colors(vec3 in_col) {
-	vec3 col = grass_color;
-	if (in_col.r > land_types_cutoff) {
-		col = dirt_color;
-	}
-	if (in_col.g > land_types_cutoff) {
-		col = grass_color;
-	}
-	return col;
-}
+//vec3 map_turrain_colors(vec3 in_col) {
+	//vec3 col = grass_color;
+	//if (in_col.r > land_types_cutoff) {
+		//col = dirt_color;
+	//}
+	//if (in_col.b > land_types_cutoff) {
+		//col = mountains_color;
+	//}
+	//if (in_col.g > land_types_cutoff) {
+		//col = grass_color;
+	//}
+	//return col;
+//}
 
 vec3 terrain_color(vec3 curr_col, vec2 uv) {
-	//vec3 col = grass_color;
+	vec3 col = grass_color;
 	//vec3 curr_col_with_grass = curr_col.xyz;
 	
-	if (draw_grass_blades && curr_col.r > land_types_cutoff) { // grass blades
-		float grass_offset = tringle(uv.x + sin(TIME * 1.3) * 0.002, grass_blades_ampletude, grass_blades_hight);
+	if (draw_grass_blades && curr_col.g > land_types_cutoff) { // grass blades 
+		float grass_offset = tringle(uv.x + sin(TIME * 1.3) * 0.002, grass_blades_ampletude, -grass_blades_hight);
 		
 		vec3 grass_blades = texture(world_curr_col, vec2(uv.x, uv.y + grass_offset)).xyz;
 		
+		//col = grass_blades;
 		curr_col = grass_blades;
 	}
-	return map_turrain_colors(curr_col);
+	
+	if (curr_col.r > land_types_cutoff) {
+		col = dirt_color;
+	}
+
+	
+	if (curr_col.b > land_types_cutoff) {
+		float mountain_noise = texture(mountains_noise, uv).x ;
+		
+		vec2 mountain_uv = mod(uv, vec2(0.03))/ 0.03;
+		mountain_uv.y = 1. - mountain_uv.y;
+		//mountain_uv.x = (mountain_uv.x + 1.)/2.;
+		
+		float hight = mountain_noise * 2.;
+		float mountain_hight = hight/2. - pow(mountain_uv.x - 0.5, 2) * 2.*hight;
+		if (mountain_uv.y >= mountain_hight) {mountain_uv.y = 0.;}
+		col = mix(mountains_color, mountain_pieck_color, mountain_uv.y);
+	}
+	return col;
+	//return map_turrain_colors(curr_col);
 }
 
 vec4 waveline(float alpha) {
