@@ -1,5 +1,8 @@
 shader_type canvas_item;
 
+const float defoult_viewport_side = 50.; // for stuff to not change size when stretched
+uniform int viewport_side = 50;
+
 uniform sampler2D world_curr_col : filter_linear, repeat_disable;
 
 uniform float alfa_cutoff = 0.6;
@@ -8,8 +11,14 @@ uniform float land_types_cutoff = 0.53;
 uniform vec3 dirt_color : source_color;
 uniform vec3 grass_color : source_color;
 uniform vec3 mountains_color : source_color;
+
 uniform vec3 mountain_pieck_color : source_color;
 uniform sampler2D mountains_noise : source_color;
+uniform float mountain_size : hint_range(0.000001, 0.1) = 0.03;
+uniform float mountain_density : hint_range(0.0, 1.0) = 0.6; // fraction of cells that grow a mountain
+uniform vec2 mountain_peak_x_range = vec2(0.25, 0.75); // where the peak can sit in the cell, 0 = left edge, 1 = right edge
+uniform vec2 mountain_peak_y_range = vec2(0.0, 0.5); // where the peak can sit in the cell, 0 = top edge, 1 = bottom edge
+uniform float mountain_height_variation : hint_range(0.0, 1.0) = 0.5; // random height scale is 1.0 +/- this
 uniform vec2 grass_blade_size = vec2(0.1, 0.15);
 
 uniform bool draw_coast = true;
@@ -31,6 +40,8 @@ uniform bool draw_grass_blades = true;
 uniform float grass_blades_hight = 0.007;
 uniform float grass_blades_ampletude = 70;
 
+varying float scale_change;
+
 vec2 get_aspect_correct_uv(vec2 uv) {
 	vec2 size = vec2(textureSize(world_curr_col, 0));
 	vec2 max_dim = vec2(max(size.x, size.y));
@@ -44,6 +55,17 @@ float island_alpha(vec2 uv) {
 float tringle(float x, float ampletude, float hight) {
     return abs(2.0 * fract(x * ampletude) - 1.0) * hight;
 }
+
+float hash12(vec2 p) {
+	vec3 p3 = fract(vec3(p.xyx) * 0.1031);
+	p3 += dot(p3, p3.yzx + 33.33);
+	return fract((p3.x + p3.y) * p3.z);
+}
+
+// arbitrary constants that keep the different random rolls independent of each other
+const vec2 peak_x_salt = vec2(13.5, 71.3);
+const vec2 peak_y_salt = vec2(39.1, 5.7);
+const vec2 height_salt = vec2(3.3, 9.9);
 
 //vec3 map_turrain_colors(vec3 in_col) {
 	//vec3 col = grass_color;
@@ -64,7 +86,7 @@ vec3 terrain_color(vec3 curr_col, vec2 uv) {
 	//vec3 curr_col_with_grass = curr_col.xyz;
 	
 	if (draw_grass_blades && curr_col.g > land_types_cutoff) { // grass blades 
-		float grass_offset = tringle(uv.x + sin(TIME * 1.3) * 0.002, grass_blades_ampletude, -grass_blades_hight);
+		float grass_offset = tringle(uv.x + sin(TIME * 1.3) * 0.002, grass_blades_ampletude, -grass_blades_hight) * scale_change;
 		
 		vec3 grass_blades = texture(world_curr_col, vec2(uv.x, uv.y + grass_offset)).xyz;
 		
@@ -78,16 +100,51 @@ vec3 terrain_color(vec3 curr_col, vec2 uv) {
 
 	
 	if (curr_col.b > land_types_cutoff) {
-		float mountain_noise = texture(mountains_noise, uv).x ;
-		
-		vec2 mountain_uv = mod(uv, vec2(0.03))/ 0.03;
-		mountain_uv.y = 1. - mountain_uv.y;
-		//mountain_uv.x = (mountain_uv.x + 1.)/2.;
-		
-		float hight = mountain_noise * 2.;
-		float mountain_hight = hight/2. - pow(mountain_uv.x - 0.5, 2) * 2.*hight;
-		if (mountain_uv.y >= mountain_hight) {mountain_uv.y = 0.;}
-		col = mix(mountains_color, mountain_pieck_color, mountain_uv.y);
+		col = mountains_color;
+
+		float adjusted_mountain_size = mountain_size * scale_change;
+		vec2 grid_pos = uv / adjusted_mountain_size;
+		vec2 cell_id = floor(grid_pos);
+
+		// a mountain's base reaches half a cell past its peak, so check the
+		// 3x3 neighbourhood to let neighbouring mountains overlap
+		for (int row = -1; row <= 1; row++) {
+			for (int column = -1; column <= 1; column++) {
+				vec2 neighbor_cell = cell_id + vec2(float(column), float(row));
+
+				if (hash12(neighbor_cell) > mountain_density) {
+					continue; // randomly discard this mountain
+				}
+
+				// random peak position within the cell
+				vec2 peak_pos = vec2(
+					mix(mountain_peak_x_range.x, mountain_peak_x_range.y, hash12(neighbor_cell + peak_x_salt)),
+					mix(mountain_peak_y_range.x, mountain_peak_y_range.y, hash12(neighbor_cell + peak_y_salt))
+				);
+
+				// the mountain's base spans half a cell to each side of the peak and
+				// ends at the bottom of its cell; discard the mountain if those lower
+				// corners fall outside the mountain region so it never looks cut off
+				vec2 lower_left_corner_uv = (neighbor_cell + peak_pos + vec2(-0.5, 1.0)) * adjusted_mountain_size;
+				vec2 lower_right_corner_uv = (neighbor_cell + peak_pos + vec2(0.5, 1.0)) * adjusted_mountain_size;
+				if (texture(world_curr_col, lower_left_corner_uv).b <= land_types_cutoff
+						|| texture(world_curr_col, lower_right_corner_uv).b <= land_types_cutoff) {
+					continue;
+				}
+
+				// fragment position within the cell, relative to the peak
+				vec2 peak_local_pos = grid_pos - neighbor_cell - peak_pos;
+
+				float height_scale = 1.0 + (hash12(neighbor_cell + height_salt) * 2.0 - 1.0) * mountain_height_variation;
+				float hight = texture(mountains_noise, uv).x * 2. * height_scale;
+				float mountain_hight = hight / 2. - pow(peak_local_pos.x, 2.) * 2. * hight;
+
+				float gradient_value = 1. - peak_local_pos.y; // 1 at the cell bottom, 0 at the cell top
+				if (gradient_value >= 0. && gradient_value < mountain_hight) {
+					col = mix(mountains_color, mountain_pieck_color, gradient_value);
+				}
+			}
+		}
 	}
 	return col;
 	//return map_turrain_colors(curr_col);
@@ -106,6 +163,8 @@ vec4 waveline(float alpha) {
 }
 
 void fragment() {
+	scale_change = defoult_viewport_side / float(viewport_side);
+	
 	vec2 uv = get_aspect_correct_uv(UV);
 	vec4 curr_col = texture(world_curr_col, uv);
 	vec4 res_col;
