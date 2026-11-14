@@ -15,10 +15,13 @@ uniform vec3 mountains_color : source_color;
 uniform vec3 mountain_pieck_color : source_color;
 uniform sampler2D mountains_noise : source_color;
 uniform float mountain_size : hint_range(0.000001, 0.1) = 0.03;
-uniform float mountain_density : hint_range(0.0, 1.0) = 0.6; // fraction of cells that grow a mountain
-uniform vec2 mountain_peak_x_range = vec2(0.25, 0.75); // where the peak can sit in the cell, 0 = left edge, 1 = right edge
-uniform vec2 mountain_peak_y_range = vec2(0.0, 0.5); // where the peak can sit in the cell, 0 = top edge, 1 = bottom edge
+uniform float mountain_density : hint_range(0.0, 1.0) = 0.6;
+uniform vec2 mountain_peak_x_range = vec2(0.25, 0.75);
+uniform vec2 mountain_peak_y_range = vec2(0.0, 0.5);
 uniform float mountain_height_variation : hint_range(0.0, 1.0) = 0.5; // random height scale is 1.0 +/- this
+uniform bool mountains_do_discard_outside_region;
+uniform float mountains_discard_outside_region_margin : hint_range(0.0, 0.5, 0.05) = 0.1;
+
 uniform vec2 grass_blade_size = vec2(0.1, 0.15);
 
 uniform bool draw_coast = true;
@@ -62,11 +65,6 @@ float hash12(vec2 p) {
 	return fract((p3.x + p3.y) * p3.z);
 }
 
-// arbitrary constants that keep the different random rolls independent of each other
-const vec2 peak_x_salt = vec2(13.5, 71.3);
-const vec2 peak_y_salt = vec2(39.1, 5.7);
-const vec2 height_salt = vec2(3.3, 9.9);
-
 //vec3 map_turrain_colors(vec3 in_col) {
 	//vec3 col = grass_color;
 	//if (in_col.r > land_types_cutoff) {
@@ -94,20 +92,25 @@ vec3 terrain_color(vec3 curr_col, vec2 uv) {
 		curr_col = grass_blades;
 	}
 	
-	if (curr_col.r > land_types_cutoff) {
+	if (curr_col.r > land_types_cutoff) { // dirt
 		col = dirt_color;
 	}
 
 	
-	if (curr_col.b > land_types_cutoff) {
+	if (curr_col.b > land_types_cutoff) { // mountains
+		
+		// arbitrary constants that keep the different random rolls independent of each other
+		const vec2 peak_x_salt = vec2(13.5, 71.3);
+		const vec2 peak_y_salt = vec2(39.1, 5.7);
+		const vec2 height_salt = vec2(3.3, 9.9);
+		
 		col = mountains_color;
 
 		float adjusted_mountain_size = mountain_size * scale_change;
 		vec2 grid_pos = uv / adjusted_mountain_size;
 		vec2 cell_id = floor(grid_pos);
 
-		// a mountain's base reaches half a cell past its peak, so check the
-		// 3x3 neighbourhood to let neighbouring mountains overlap
+		// check the 3x3 neighbourhood to let neighbouring mountains overlap
 		for (int row = -1; row <= 1; row++) {
 			for (int column = -1; column <= 1; column++) {
 				vec2 neighbor_cell = cell_id + vec2(float(column), float(row));
@@ -122,14 +125,21 @@ vec3 terrain_color(vec3 curr_col, vec2 uv) {
 					mix(mountain_peak_y_range.x, mountain_peak_y_range.y, hash12(neighbor_cell + peak_y_salt))
 				);
 
-				// the mountain's base spans half a cell to each side of the peak and
-				// ends at the bottom of its cell; discard the mountain if those lower
-				// corners fall outside the mountain region so it never looks cut off
-				vec2 lower_left_corner_uv = (neighbor_cell + peak_pos + vec2(-0.5, 1.0)) * adjusted_mountain_size;
-				vec2 lower_right_corner_uv = (neighbor_cell + peak_pos + vec2(0.5, 1.0)) * adjusted_mountain_size;
-				if (texture(world_curr_col, lower_left_corner_uv).b <= land_types_cutoff
-						|| texture(world_curr_col, lower_right_corner_uv).b <= land_types_cutoff) {
-					continue;
+				// discard the mountain if corners fall outside the mountain region
+				if (mountains_do_discard_outside_region) {
+					float m = mountains_discard_outside_region_margin;
+					vec2 down_left_corner_uv = (neighbor_cell + peak_pos + vec2(-0.5 + m, 1.0 - m)) * adjusted_mountain_size;
+					vec2 down_right_corner_uv = (neighbor_cell + peak_pos + vec2(0.5 - m, 1.0 - m)) * adjusted_mountain_size;
+					vec2 up_left_corner_uv = (neighbor_cell + peak_pos + vec2(-0.5 + m, m)) * adjusted_mountain_size;
+					vec2 up_right_corner_uv = (neighbor_cell + peak_pos + vec2(0.5 - m, m)) * adjusted_mountain_size;
+					if (
+							texture(world_curr_col, down_left_corner_uv).b <= land_types_cutoff || 
+							texture(world_curr_col, down_right_corner_uv).b <= land_types_cutoff ||
+							texture(world_curr_col, up_left_corner_uv).b <= land_types_cutoff ||
+							texture(world_curr_col, up_right_corner_uv).b <= land_types_cutoff
+							) {
+						continue;
+					}
 				}
 
 				// fragment position within the cell, relative to the peak

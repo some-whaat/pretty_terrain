@@ -27,18 +27,18 @@ frequency = 0.0396
 fractal_octaves = 10
 
 [sub_resource type="NoiseTexture2D" id="NoiseTexture2D_iw1w7"]
-width = 256
-height = 256
+width = 200
+height = 200
 noise = SubResource("FastNoiseLite_06xp3")
 
-[sub_resource type="ViewportTexture" id="ViewportTexture_nq4aq"]
+[sub_resource type="ViewportTexture" id="ViewportTexture_re3l1"]
 viewport_path = NodePath("MapSubViewport")
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_x32av"]
 resource_local_to_scene = true
 shader = ExtResource("6_dwbse")
 shader_parameter/viewport_side = 50
-shader_parameter/world_curr_col = SubResource("ViewportTexture_nq4aq")
+shader_parameter/world_curr_col = SubResource("ViewportTexture_re3l1")
 shader_parameter/alfa_cutoff = 0.37
 shader_parameter/land_types_cutoff = 0.335
 shader_parameter/dirt_color = Color(0.8862745, 0.69803923, 0.6901961, 1)
@@ -50,7 +50,9 @@ shader_parameter/mountain_size = 0.0390010018525
 shader_parameter/mountain_density = 1.0
 shader_parameter/mountain_peak_x_range = Vector2(0.25, 0.75)
 shader_parameter/mountain_peak_y_range = Vector2(0, 0.5)
-shader_parameter/mountain_height_variation = 1.0
+shader_parameter/mountain_height_variation = 0.622000029545
+shader_parameter/mountains_do_discard_outside_region = true
+shader_parameter/mountains_discard_outside_region_margin = 0.30000000447036
 shader_parameter/grass_blade_size = Vector2(-2.57, 0.8)
 shader_parameter/draw_coast = true
 shader_parameter/coast_offset = Vector2(0.003, 0.003)
